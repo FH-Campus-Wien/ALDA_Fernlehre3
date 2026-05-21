@@ -1,0 +1,66 @@
+plugins {
+    id 'application'
+    id 'java'
+    id 'jvm-test-suite'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'at.ac.hcw'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+javafx {
+    version = '21.0.7'
+    modules = ['javafx.controls']
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.14.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.14.3'
+}
+
+testing.suites.configureEach {
+    useJUnitJupiter()
+}
+
+//noinspection GroovyAssignabilityCheck
+run {
+    standardInput = System.in
+}
+
+application {
+    mainClass  = 'at.ac.hcw.MaxFlowApp'
+}
+
+tasks.register('runCli', JavaExec) {
+    group = 'application'
+    description = 'Startet die Konsolenanwendung fuer Ford-Fulkerson.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'at.ac.hcw.MaxFlowCli'
+    standardInput = System.in
+}
+
+allprojects {
+    tasks.withType(JavaCompile).tap {
+        configureEach {
+            sourceCompatibility = JavaVersion.VERSION_21
+            targetCompatibility = JavaVersion.VERSION_21
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+tasks.withType(Test).configureEach {
+    systemProperty "file.encoding", "UTF-8"
+}

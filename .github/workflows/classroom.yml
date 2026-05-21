@@ -1,0 +1,88 @@
+name: Autograding Tests
+
+on:
+  push:
+  repository_dispatch:
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: testMaximumFlowInSampleNetwork
+        id: testMaximumFlowInSampleNetwork
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: testMaximumFlowInSampleNetwork
+          setup-command: ''
+          command: ./gradlew test --tests at.ac.hcw.maxflow.FordFulkersonTest.computesMaximumFlowForSampleNetwork
+          timeout: 2
+          max-score: 1
+
+      - name: testUnreachableSink
+        id: testUnreachableSink
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: testUnreachableSink
+          setup-command: ''
+          command: ./gradlew test --tests at.ac.hcw.maxflow.FordFulkersonTest.returnsZeroWhenSinkCannotBeReached
+          timeout: 2
+          max-score: 1
+
+      - name: testMissingSourceOrSink
+        id: testMissingSourceOrSink
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: testMissingSourceOrSink
+          setup-command: ''
+          command: ./gradlew test --tests at.ac.hcw.maxflow.FordFulkersonTest.rejectsMissingSourceOrSink
+          timeout: 2
+          max-score: 1
+
+      - name: testNegativeCapacity
+        id: testNegativeCapacity
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: testNegativeCapacity
+          setup-command: ''
+          command: ./gradlew test --tests at.ac.hcw.maxflow.FordFulkersonTest.rejectsNegativeCapacities
+          timeout: 2
+          max-score: 1
+
+      - name: testResidualGraphRerouting
+        id: testResidualGraphRerouting
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: testResidualGraphRerouting
+          setup-command: ''
+          command: ./gradlew test --tests at.ac.hcw.maxflow.FordFulkersonTest.usesResidualEdgesToRerouteFlow
+          timeout: 2
+          max-score: 1
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          TESTMAXIMUMFLOWINSAMPLENETWORK_RESULTS: "${{steps.testMaximumFlowInSampleNetwork.outputs.result}}"
+          TESTUNREACHABLESINK_RESULTS: "${{steps.testUnreachableSink.outputs.result}}"
+          TESTMISSINGSOURCEORSINK_RESULTS: "${{steps.testMissingSourceOrSink.outputs.result}}"
+          TESTNEGATIVECAPACITY_RESULTS: "${{steps.testNegativeCapacity.outputs.result}}"
+          TESTRESIDUALGRAPHREROUTING_RESULTS: "${{steps.testResidualGraphRerouting.outputs.result}}"
+        with:
+          runners: testMaximumFlowInSampleNetwork,testUnreachableSink,testMissingSourceOrSink,testNegativeCapacity,testResidualGraphRerouting
